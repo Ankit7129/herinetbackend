@@ -1,0 +1,41 @@
+# .gitignore
+.env
+# Backend
+# Backend
+
+# .env file for storing sensitive environment variables
+.env
+
+# Node modules directory
+node_modules/
+
+# Uploads directory (if storing files like images, videos, etc. that don't need to be tracked in Git)
+uploads/
+
+# Backend logs (if you have any log files)
+*.log
+
+# Frontend
+
+# Node modules directory for frontend
+node_modules/
+
+# Build directory for frontend (e.g. production build)
+build/
+
+# .env file for frontend (if storing any environment variables for frontend, though not always needed in frontend)
+.env
+
+# Frontend logs (if you have any log files)
+*.log
+
+# IDE/Editor files (Optional but good to ignore)
+
+# VS Code settings folder
+.vscode/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
