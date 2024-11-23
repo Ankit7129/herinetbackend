@@ -21,6 +21,8 @@ const ProfileSchema = new mongoose.Schema({
       description: { type: String }
     }
   ],
+  messages: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }],
+
   achievements: [
     {
       title: { type: String, required: true },

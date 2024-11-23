@@ -272,5 +272,57 @@ router.get('/pending-requests', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
+// POST /send-message/:receiverId
+router.post('/send-message/:receiverId', authMiddleware, async (req, res) => {
+  try {
+    const senderProfile = await Profile.findOne({ userId: req.user.id });
+    const receiverProfile = await Profile.findOne({ userId: req.params.receiverId });
+
+    if (!receiverProfile) {
+      return res.status(404).json({ message: 'Receiver not found' });
+    }
+
+    if (senderProfile.userId.toString() === receiverProfile.userId.toString()) {
+      return res.status(400).json({ message: 'You cannot send a message to yourself' });
+    }
+
+    const newMessage = new Message({
+      senderId: senderProfile.userId,
+      receiverId: receiverProfile.userId,
+      content: req.body.content,
+    });
+
+    await newMessage.save();
+
+    res.status(200).json({ message: 'Message sent successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+// GET /messages/:receiverId
+router.get('/messages/:receiverId', authMiddleware, async (req, res) => {
+  try {
+    const senderProfile = await Profile.findOne({ userId: req.user.id });
+    const receiverProfile = await Profile.findOne({ userId: req.params.receiverId });
+
+    if (!receiverProfile) {
+      return res.status(404).json({ message: 'Receiver not found' });
+    }
+
+    // Fetch all messages between sender and receiver
+    const messages = await Message.find({
+      $or: [
+        { senderId: senderProfile.userId, receiverId: receiverProfile.userId },
+        { senderId: receiverProfile.userId, receiverId: senderProfile.userId },
+      ],
+    }).sort({ sentAt: 1 });
+
+    res.status(200).json({
+      messages,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
 
 module.exports = router;

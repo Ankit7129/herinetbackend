@@ -2,13 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const bodyParser = require('body-parser');
+
 const authRoutes = require("./routes/authRoutes"); // Import auth routes
 const { authenticateUser } = require("./middlewares/authMiddleware"); // Import auth middleware
 const friendRoutes = require("./routes/friendRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const connexionRoutes = require('./routes/connexionRoutes'); // Import the connexion routes
 //const messageRoutes = require('./routes/messageRoutes'); // Messaging routes
-//const projectRoutes = require('./routes/projectRoutes'); 
+const projectRoutes = require('./routes/projectRoutes'); 
+const messageRoutes = require('./routes/messages'); // Import the message routes
+
 
 const app = express();
 
@@ -16,6 +20,8 @@ const app = express();
 app.use(cors());
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // Parse JSON requests
+
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -31,7 +37,8 @@ app.use("/api/friends", friendRoutes);
 app.use("/api/profile", profileRoutes);
 app.use('/api', connexionRoutes);
 //app.use('/api/messages', messageRoutes);
-//app.use('/api/projects', projectRoutes);
+app.use('/api/messages', messageRoutes);
+
 
 
 // Protected routes example (these will require authentication)
