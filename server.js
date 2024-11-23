@@ -7,6 +7,8 @@ const { authenticateUser } = require("./middlewares/authMiddleware"); // Import 
 const friendRoutes = require("./routes/friendRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const connexionRoutes = require('./routes/connexionRoutes'); // Import the connexion routes
+//const messageRoutes = require('./routes/messageRoutes'); // Messaging routes
+//const projectRoutes = require('./routes/projectRoutes'); 
 
 const app = express();
 
@@ -28,6 +30,8 @@ app.use("/api/auth", authRoutes); // Public routes for registration and login
 app.use("/api/friends", friendRoutes);
 app.use("/api/profile", profileRoutes);
 app.use('/api', connexionRoutes);
+//app.use('/api/messages', messageRoutes);
+//app.use('/api/projects', projectRoutes);
 
 
 // Protected routes example (these will require authentication)

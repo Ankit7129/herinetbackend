@@ -211,18 +211,18 @@ const login = async (req, res) => {
 
     // If user doesn't exist
     if (!user) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: "Email not found. Please register first." });
     }
 
     // Check if the user is verified
     if (!user.isVerified) {
-      return res.status(400).json({ msg: "Please verify your email before logging in" });
+      return res.status(400).json({ msg: "Please verify your email before logging in." });
     }
 
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid credentials" });
+      return res.status(400).json({ msg: "Invalid credentials." });
     }
 
     // Generate JWT token
@@ -253,6 +253,7 @@ const login = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
 
 // Admin Login Endpoint
 const loginAdmin = async (req, res) => {

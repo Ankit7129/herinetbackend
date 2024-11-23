@@ -1,14 +1,14 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const messageSchema = new mongoose.Schema({
+const MessageSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Reference to the sender
+    ref: 'User',
     required: true,
   },
   receiver: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Reference to the receiver
+    ref: 'User',
     required: true,
   },
   content: {
@@ -19,10 +19,7 @@ const messageSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  isRead: {
-    type: Boolean,
-    default: false, // Mark messages as unread by default
-  },
 });
 
-module.exports = mongoose.model("Message", messageSchema);
+const Message = mongoose.model('Message', MessageSchema);
+module.exports = Message;
