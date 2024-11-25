@@ -13,6 +13,8 @@ const connexionRoutes = require('./routes/connexionRoutes'); // Import the conne
 const messageRoutes = require('./routes/messages'); // Import the message routes
 const User = require('./models/User'); // Import User model to access the database
 const WelcomePageRoutes = require("./routes/welcomepage");
+const postRoutes = require('./routes/posts');
+
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use("/api/auth", authRoutes); // Public routes for registration and login
 app.use("/api/profile", profileRoutes);
 app.use('/api', connexionRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/posts', postRoutes);
+
 
 // Protected routes example (these will require authentication)
 app.get("/api/protected", authenticateUser, (req, res) => {

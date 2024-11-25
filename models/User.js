@@ -51,6 +51,9 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false // To track user verification
   },
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -61,4 +64,8 @@ const UserSchema = new mongoose.Schema({
 UserSchema.index({ email: 1 }); // Index email for faster lookups
 
 const User = mongoose.model("User", UserSchema);
+module.exports = {
+  User: mongoose.model('User', UserSchema),
+  predefinedColleges, // Export predefinedColleges
+};
 module.exports = User;

@@ -89,7 +89,9 @@ const ProfileSchema = new mongoose.Schema({
 
   // Privacy and Preferences
   visibility: { type: String, enum: ["Public", "Private", "Connections Only"], default: "Public" },
-
+  preferredPostCategories: { type: [String], enum: ["Announcement", "Discussion", "Idea", "Event", "Achievement", "Help Request"], default: [] },
+  preferredProjectCategories: { type: [String], enum: ["Tech", "Business", "Design", "Research", "Startup", "Volunteering"], default: [] },
+  
   // Portfolio Links
   portfolioLinks: {
     linkedin: { type: String, trim: true },
