@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const cron = require('node-cron');  // Import node-cron for scheduled tasks
+const path = require('path');
 
 const authRoutes = require("./routes/authRoutes"); // Import auth routes
 const { authenticateUser } = require("./middlewares/authMiddleware"); // Import auth middleware
