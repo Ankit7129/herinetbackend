@@ -1,17 +1,4 @@
-const mongoose = require("mongoose");
-
-// Predefined interests list (universal)
-const predefinedInterests = [
-  "Leadership", "Research", "Entrepreneurship",
-  "Programming", "AI", "Data Science", "Cybersecurity", "Robotics",
-  "Human Rights", "Corporate Law", "Criminal Justice",
-  "Marketing", "Finance", "Business Strategy",
-  "Public Health", "Medicine", "Biotech",
-  "UI/UX", "Graphic Design", "Architecture",
-  "Physics", "Chemistry", "Biology",
-  "Sports", "Music", "Arts", "Photography", "Writing",
-  "Traveling", "Volunteering", "Other" // "Other" allows manual entry
-];
+const mongoose = require('mongoose');
 
 // Predefined college list
 const predefinedColleges = [
@@ -24,14 +11,7 @@ const predefinedColleges = [
   "Other"
 ];
 
-// Schema for educational background entries
-const EducationSchema = new mongoose.Schema({
-  degree: { type: String, trim: true, required: true },
-  fieldOfStudy: { type: String, trim: true, required: true },
-  institutionName: { type: String, trim: true, required: true },
-  graduationYear: { type: Number, required: true }
-});
-
+// Define User Schema
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -42,7 +22,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-   //match: /^[a-zA-Z0-9._%+-]+@heritage\.(student|faculty|alumni)\.in$/
+    //match: /^[a-zA-Z0-9._%+-]+@heritage\.(student|faculty|alumni)\.in$/ // Uncomment for specific email domain validation
   },
   role: {
     type: String,
@@ -51,7 +31,7 @@ const UserSchema = new mongoose.Schema({
   },
   isAdmin: {
     type: Boolean,
-    default: false // Only manually set during promotions
+    default: false // Manually set during promotions
   },
   college: {
     type: String,
@@ -63,31 +43,22 @@ const UserSchema = new mongoose.Schema({
     enum: ["Male", "Female", "Other"],
     required: true
   },
-  interests: {
-    predefined: { type: [String], enum: predefinedInterests, default: [] },
-    custom: { type: [String], default: [] } // Custom interests entered manually
-  },
-  educationalBackground: [EducationSchema], // Allow multiple entries for education
-  portfolioLinks: {
-    linkedin: { type: String, trim: true },
-    github: { type: String, trim: true },
-    portfolioWebsite: { type: String, trim: true },
-    twitter: { type: String, trim: true },
-    email: { type: String, trim: true }
-  },
   password: {
     type: String,
     required: true
   },
-  isVerified: { // New field added to track user verification
+  isVerified: {
     type: Boolean,
-    default: false
+    default: false // To track user verification
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+
+// Indexing
+UserSchema.index({ email: 1 }); // Index email for faster lookups
 
 const User = mongoose.model("User", UserSchema);
 module.exports = User;

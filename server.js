@@ -3,16 +3,15 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require('body-parser');
+const cron = require('node-cron');  // Import node-cron for scheduled tasks
 
 const authRoutes = require("./routes/authRoutes"); // Import auth routes
 const { authenticateUser } = require("./middlewares/authMiddleware"); // Import auth middleware
-const friendRoutes = require("./routes/friendRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const connexionRoutes = require('./routes/connexionRoutes'); // Import the connexion routes
-//const messageRoutes = require('./routes/messageRoutes'); // Messaging routes
-const projectRoutes = require('./routes/projectRoutes'); 
 const messageRoutes = require('./routes/messages'); // Import the message routes
-
+const User = require('./models/User'); // Import User model to access the database
+const WelcomePageRoutes = require("./routes/welcomepage");
 
 const app = express();
 
@@ -22,7 +21,6 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // Parse JSON requests
 
-
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -31,19 +29,42 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log("Connected to MongoDB"))
 .catch((error) => console.log("Failed to connect to MongoDB:", error));
 
+
+app.use("/api/manage-welcome-page", WelcomePageRoutes);
+
 // Routes
 app.use("/api/auth", authRoutes); // Public routes for registration and login
-app.use("/api/friends", friendRoutes);
 app.use("/api/profile", profileRoutes);
 app.use('/api', connexionRoutes);
-//app.use('/api/messages', messageRoutes);
 app.use('/api/messages', messageRoutes);
-
-
 
 // Protected routes example (these will require authentication)
 app.get("/api/protected", authenticateUser, (req, res) => {
   res.json({ message: `Welcome, ${req.user.name}` });
+});
+
+// Fallback for all other routes - serve the index.html to let React Router handle it
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// Cron job setup to delete unverified users after 1 hour
+cron.schedule('*/1 * * * *', async () => {
+  try {
+    // Find users who are unverified and created more than 1 hour ago
+    const usersToDelete = await User.find({
+      isVerified: false,
+      createdAt: { $lt: new Date(Date.now() - 2 * 60 * 1000) }  // 2 minutes ago
+    });
+
+    if (usersToDelete.length > 0) {
+      // Delete unverified users
+      await User.deleteMany({ _id: { $in: usersToDelete.map(user => user._id) } });
+      console.log(`${usersToDelete.length} unverified user(s) deleted.`);
+    }
+  } catch (error) {
+    console.error("Error cleaning up unverified users:", error);
+  }
 });
 
 // Server setup

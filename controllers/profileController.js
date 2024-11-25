@@ -2,7 +2,6 @@ const Profile = require('../models/Profile');
 const User = require('../models/User');
 const cloudinary = require('cloudinary').v2; // Cloudinary for image uploads
 
-
 // Configure Cloudinary with your credentials
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, // Your Cloudinary Cloud Name
@@ -15,8 +14,8 @@ const getProfile = async (req, res) => {
   try {
     const userId = req.user.id; // Using req.user.id from the JWT token
 
-    // Fetch profile data along with User data (email, name, college)
-    const profile = await Profile.findOne({ userId }).populate('userId', 'email name college');
+    // Fetch profile data along with User data (email, name, college, etc.)
+    const profile = await Profile.findOne({ userId }).populate('userId', 'email name college role');
 
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
@@ -24,7 +23,7 @@ const getProfile = async (req, res) => {
 
     res.status(200).json(profile);
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching profile:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
   }
 };
@@ -42,7 +41,23 @@ const updateProfile = async (req, res) => {
       hobbies,
       certifications,
       skills,
+      interests,
+      portfolioLinks,
+      visibility
     } = req.body;
+
+    // Simple validation checks
+    if (portfolioLinks && typeof portfolioLinks !== 'object') {
+      return res.status(400).json({ error: 'Portfolio links should be an object.' });
+    }
+
+    if (skills && !Array.isArray(skills)) {
+      return res.status(400).json({ error: 'Skills should be an array.' });
+    }
+
+    if (interests && !Array.isArray(interests.predefined)) {
+      return res.status(400).json({ error: 'Predefined interests should be an array.' });
+    }
 
     // Fetch the user's existing profile
     let profile = await Profile.findOne({ userId });
@@ -56,6 +71,9 @@ const updateProfile = async (req, res) => {
       profile.hobbies = hobbies || profile.hobbies;
       profile.certifications = certifications || profile.certifications;
       profile.skills = skills || profile.skills;
+      profile.interests = interests || profile.interests;
+      profile.portfolioLinks = { ...profile.portfolioLinks, ...portfolioLinks }; // Merging portfolioLinks
+      profile.visibility = visibility || profile.visibility;
       profile.updatedAt = Date.now(); // Set the update timestamp
     } else {
       // If no profile exists, create a new one
@@ -68,16 +86,20 @@ const updateProfile = async (req, res) => {
         hobbies,
         certifications,
         skills,
+        interests,
+        portfolioLinks,
+        visibility
       });
     }
 
     await profile.save(); // Save the profile
     res.status(200).json({ message: 'Profile updated successfully', profile });
   } catch (error) {
-    console.error(error);
+    console.error('Error updating profile:', error);
     res.status(500).json({ error: 'Failed to update profile' });
   }
 };
+
 
 // Function to upload profile picture
 const uploadProfilePicture = async (req, res) => {
@@ -100,7 +122,7 @@ const uploadProfilePicture = async (req, res) => {
       profile.updatedAt = Date.now(); // Set update timestamp
     } else {
       // Create a new profile if none exists
-      profile = new Profile({ userId, profileImageUrl: result.secure_url, });
+      profile = new Profile({ userId, profileImageUrl: result.secure_url });
     }
 
     await profile.save(); // Save the updated profile with the new picture
@@ -109,7 +131,7 @@ const uploadProfilePicture = async (req, res) => {
       profilePicture: result.secure_url,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Error uploading profile picture:', error);
     res.status(500).json({ error: 'Failed to upload profile picture' });
   }
 };
@@ -131,7 +153,7 @@ const deleteProfile = async (req, res) => {
 
     res.status(200).json({ message: 'Profile deleted successfully' });
   } catch (error) {
-    console.error(error);
+    console.error('Error deleting profile:', error);
     res.status(500).json({ error: 'Failed to delete profile' });
   }
 };
