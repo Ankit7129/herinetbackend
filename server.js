@@ -47,10 +47,7 @@ app.get("/api/protected", authenticateUser, (req, res) => {
   res.json({ message: `Welcome, ${req.user.name}` });
 });
 
-// Fallback for all other routes - serve the index.html to let React Router handle it
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+
 
 // Cron job setup to delete unverified users after 1 hour
 cron.schedule('0 * * * *', async () => {
