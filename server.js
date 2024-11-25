@@ -49,12 +49,12 @@ app.get('*', (req, res) => {
 });
 
 // Cron job setup to delete unverified users after 1 hour
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('0 * * * *', async () => {
   try {
     // Find users who are unverified and created more than 1 hour ago
     const usersToDelete = await User.find({
       isVerified: false,
-      createdAt: { $lt: new Date(Date.now() - 2 * 60 * 1000) }  // 2 minutes ago
+      createdAt: { $lt: new Date(Date.now() - 60 * 60 * 1000) }  // 2 minutes ago
     });
 
     if (usersToDelete.length > 0) {
