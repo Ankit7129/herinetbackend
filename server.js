@@ -22,6 +22,9 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json()); // Parse JSON requests
 
+
+mongoose.set('strictQuery', true);
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
