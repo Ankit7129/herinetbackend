@@ -67,6 +67,9 @@ cron.schedule('0 * * * *', async () => {
     console.error("Error cleaning up unverified users:", error);
   }
 });
+app.get('/', (req, res) => {
+  res.status(404).json({ message: 'API only. No frontend served here.' });
+});
 
 // Server setup
 const PORT = process.env.PORT || 5000;
