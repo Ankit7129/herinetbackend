@@ -18,6 +18,8 @@ const ProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
   // Personal Information
+  name: { type: String, ref: "User", required: true,  },
+
   bio: { type: String, trim: true, default: '' },
   profileImageUrl: { type: String, trim: true, default: '' },
   hobbies: { type: [String], default: [] },
