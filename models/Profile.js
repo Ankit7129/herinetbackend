@@ -17,6 +17,7 @@ const predefinedInterests = [
 const ProfileSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
+
   // Personal Information
   name: { type: String, ref: "User", required: true,  },
 
@@ -74,6 +75,20 @@ const ProfileSchema = new mongoose.Schema({
       level: { type: String, enum: ["Beginner", "Intermediate", "Advanced"], default: "Beginner" },
     }
   ],
+// Post-Related Data Integration
+posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }], // User's authored posts
+likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }], // Posts liked by the user
+savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }], // Posts saved by the user
+
+// Engagement Metrics
+engagement: {
+  totalLikesReceived: { type: Number, default: 0 },
+  totalSharesReceived: { type: Number, default: 0 },
+  totalCommentsReceived: { type: Number, default: 0 }
+},
+
+// Projects Involvement
+projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }], // Projects the user has joined or created
 
   // Social Features
   connectionRequests: [

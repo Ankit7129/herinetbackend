@@ -4,6 +4,8 @@ const multer = require('multer');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 const Post = require('../models/Post');
 const Profile = require('../models/Profile');
+const User = require('../models/User'); // Import User model
+
 
 const router = express.Router();
 
@@ -37,10 +39,7 @@ function calculateEngagementScore(post) {
 
 // Create Post
 // Create Post
-router.post(
-  '/create-post',
-  authMiddleware,
-  upload.array('media', 10), // Max 10 media files
+router.post('/create-post',authMiddleware,upload.array('media', 10), // Max 10 media files
   async (req, res) => {
     try {
       const author = req.user.id;
@@ -98,6 +97,13 @@ router.post(
       const newPost = new Post(postData);
       await newPost.save();
 
+      // Update the user's profile to include this new post
+      await Profile.findOneAndUpdate(
+        { user: author },
+        { $push: { posts: newPost._id } },
+        { new: true }  // Return updated profile
+      );
+
       res.status(201).json({ message: 'Post created successfully.', post: newPost });
     } catch (error) {
       res.status(500).json({ message: 'Failed to create post.', error: error.message });
@@ -111,7 +117,7 @@ router.get('/feed', authMiddleware, async (req, res) => {
   try {
     // Fetch current user's profile data
     const currentUserProfile = await Profile.findOne({ userId: req.user.id })
-      .populate('userId', 'email name college role'); // Populate fields from the referenced userId
+      .populate('userId', 'email profileImageUrl name college role'); // Populate fields from the referenced userId
 
     if (!currentUserProfile) {
       return res.status(404).json({ message: 'User profile not found.' });
@@ -148,19 +154,28 @@ router.get('/feed', authMiddleware, async (req, res) => {
       query['author.gender'] = filterByGender;
     }
 
-    // Fetch posts with pagination and populate author and commenter details
+    // Fetch posts with pagination and populate author, commenter, liker, saver, and sharer details
     const posts = await Post.find(query)
-      .populate('author', 'name email role gender college') // Populate author fields
-      .populate('comments.commenter', 'name email') // Populate commenter name in comments
-      .populate('likes.liker', 'name')  // Populate user details for likes
-      .populate('saves.by', 'name')  // Populate user details for saves
-      .populate('shares.by', 'name') // Populate user details for shares
+      .populate('author', 'name profileImageUrl email role gender college')  // Populate basic author details
+      .populate('comments.commenter', 'name profileImageUrl')  // Populate commenter details from Profile model
+      .populate('likes.liker', 'name profileImageUrl email role gender college')  // Populate liker details from Profile model
+      .populate('saves.by', 'name profileImageUrl email role gender college')  // Populate saver details from Profile model
+      .populate('shares.by', 'name profileImageUrl')  // Populate sharer details from Profile model
       .sort({ createdAt: -1 })
       .skip((currentPage - 1) * pageLimit)
       .limit(pageLimit);
 
+    // Fetch the complete profile details of authors by populating the 'profile' field
+    await Promise.all(posts.map(async (post) => {
+      const authorProfile = await Profile.findOne({ userId: post.author._id }).select('profileImageUrl');
+      post.author = {
+        ...post.author.toObject(),
+        profile: authorProfile  // Add the profile information to the author
+      };
+    }));
+
     // Fetch all posts without pagination to calculate accurate counts
-    const allPosts = await Post.find(query).populate('author', 'role gender college');
+    const allPosts = await Post.find(query).populate('author', 'role profileImageUrl gender college');
 
     // Separate posts into normal posts and projects
     const normalPosts = [];
@@ -184,7 +199,7 @@ router.get('/feed', authMiddleware, async (req, res) => {
       const { role, gender, college, _id: userId } = post.author;
 
       // Handle project posts
-      if (post.projectDetails.title) {
+      if (post.projectDetails && post.projectDetails.title) {
         roleCount.projects[role] = roleCount.projects[role] || { count: 0, userIds: [] };
         roleCount.projects[role].count++;
         roleCount.projects[role].userIds.push(userId);
@@ -226,12 +241,13 @@ router.get('/feed', authMiddleware, async (req, res) => {
     const updatedPosts = posts.map(post => {
       return {
         ...post.toObject(),
+      
         likeCount: post.likes.length,
         commentCount: post.comments.length,
         saveCount: post.saves.length,
         shareCount: post.shares.length || 0, // Default to 0 if not defined
         isProject: post.isProject,  // Flag to indicate if it's a project post
-        projectDetails: post.isProject ? post.projectDetails : undefined,  // Only include project details for project posts
+        projectDetails: post.isProject ? { ...post.projectDetails, projectId: post._id } : undefined,  // Include projectId for project posts
       };
     });
 
@@ -259,6 +275,12 @@ router.get('/feed', authMiddleware, async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch posts.', error: err.message });
   }
 });
+
+
+
+
+
+
 
 
 

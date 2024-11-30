@@ -99,6 +99,13 @@ router.post(
       newProjectPost.engagementScore = calculateEngagementScore(newProjectPost);
 
       await newProjectPost.save();
+      // Update the user's profile to include this new project
+      await Profile.findOneAndUpdate(
+        { user: author },
+        { $push: { projects: newProjectPost._id } },
+        { new: true }
+      );
+
       res.status(201).json({ message: 'Project posted successfully.', project: newProjectPost });
     } catch (error) {
       res.status(500).json({ message: 'Failed to create project post.', error: error.message });

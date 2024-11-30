@@ -12,6 +12,8 @@ const predefinedColleges = [
 
 // Define User Schema
 const UserSchema = new mongoose.Schema({
+  profile: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile' },
+
   name: {
     type: String,
     required: true,
@@ -51,12 +53,21 @@ const UserSchema = new mongoose.Schema({
     default: false // To track user verification
   },
   posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
-projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
+  projects: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }],
 
   createdAt: {
     type: Date,
     default: Date.now
   }
+});
+
+// Virtual field to get profileImageUrl from the Profile model
+UserSchema.virtual('profileImageUrl', {
+  ref: 'Profile', // The model to use
+  localField: 'profile', // The field in the User model that references the Profile model
+  foreignField: '_id', // The field in the Profile model that matches
+  justOne: true, // Only one profile is associated with the user
+  options: { select: 'profileImageUrl' } // Only select the profileImageUrl from the Profile model
 });
 
 // Indexing
